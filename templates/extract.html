@@ -1,0 +1,131 @@
+{% extends "base.html" %}
+
+{% block title %}Receive / Extract Secret Message — Secure Image Steganography{% endblock %}
+
+{% block content %}
+<section class="page-section">
+    <h1 class="section-title">🔓 Receive a Secret Message</h1>
+    <p class="section-subtitle">Upload the stego image received from the sender and enter the shared password to extract and decrypt the hidden message.</p>
+
+    {% if success %}
+    <!-- ── Extraction Result View ──────────────────────────────────────── -->
+    <div class="result-card">
+        <h2><span>✓</span> Message Extracted &amp; Decrypted</h2>
+
+        <div class="status-badges">
+            <span class="badge badge-success">✓ SHA-256 Integrity Verified</span>
+            <span class="badge badge-success">✓ AES-256-GCM Authenticated</span>
+            <span class="badge badge-info">LSB Payload Extracted</span>
+        </div>
+
+        <div class="message-display-box">
+            <div class="message-display-header">
+                <span>DECRYPTED PLAINTEXT MESSAGE</span>
+                <button type="button" class="btn btn-secondary btn-sm copy-btn" data-copy-target="decrypted-text" title="Copy decrypted message">
+                    <span>📋</span> Copy Text
+                </button>
+            </div>
+            <pre class="extracted-text" id="decrypted-text">{{ message }}</pre>
+        </div>
+
+        <div class="crypto-meta-grid">
+            <div class="meta-item">
+                <span class="meta-item-label">Encryption Algorithm</span>
+                <span class="meta-item-value">{{ algorithm }}</span>
+            </div>
+            <div class="meta-item">
+                <span class="meta-item-label">Key Derivation</span>
+                <span class="meta-item-value">{{ kdf }} ({{ iterations }} iter)</span>
+            </div>
+            <div class="meta-item" style="grid-column: 1 / -1;">
+                <span class="meta-item-label">Verified SHA-256 Digest</span>
+                <span class="meta-item-value mono"><code>{{ sha256_hex }}</code></span>
+            </div>
+        </div>
+
+        <div style="margin-top: 1.5rem;">
+            <a href="{{ url_for('extract.extract_get') }}" class="btn btn-secondary">
+                <span>🔄</span> Extract Another Image
+            </a>
+        </div>
+    </div>
+
+    {% elif integrity_failed %}
+    <!-- ── Integrity Failure Alert Card ──────────────────────────────── -->
+    <div class="result-card" style="border-color: rgba(239, 68, 68, 0.5);">
+        <h2 style="color: var(--color-error);"><span>✕</span> Integrity Verification Failed</h2>
+        <p style="color: var(--text-muted); margin-bottom: 1.5rem;">
+            The SHA-256 digest recomputed over the extracted payload does not match the digest embedded at creation time.
+            This proves the stego image has been modified, compressed, or corrupted. Decryption was safely aborted.
+        </p>
+
+        <div class="crypto-meta-grid">
+            <div class="meta-item">
+                <span class="meta-item-label">Computed SHA-256 Digest</span>
+                <span class="meta-item-value mono" style="color: var(--color-error);"><code>{{ computed_hash }}</code></span>
+            </div>
+            <div class="meta-item">
+                <span class="meta-item-label">Stored SHA-256 Digest</span>
+                <span class="meta-item-value mono" style="color: var(--accent-cyan);"><code>{{ stored_hash }}</code></span>
+            </div>
+        </div>
+
+        <div style="margin-top: 1.5rem;">
+            <a href="{{ url_for('extract.extract_get') }}" class="btn btn-secondary">
+                <span>🔄</span> Try Another Image
+            </a>
+        </div>
+    </div>
+
+    {% else %}
+    <!-- ── Extract Form ─────────────────────────────────────────────── -->
+    <form action="{{ url_for('extract.extract_post') }}" method="POST" enctype="multipart/form-data" class="crypto-form">
+        <div class="form-grid">
+            
+            <!-- Left Column: Stego Image Upload & Preview -->
+            <div class="form-column">
+                <h3 class="column-title"><span>🖼️</span> 1. Select Stego Image</h3>
+                
+                <div class="dropzone" id="stego-dropzone" data-preview="stego-preview-box">
+                    <input type="file" id="image" name="image" accept=".png,.bmp" required />
+                    <div class="dropzone-icon">📥</div>
+                    <div class="dropzone-title">Drop your stego PNG here</div>
+                    <div class="dropzone-hint">or click to browse (PNG, BMP &mdash; max 16 MB)</div>
+                </div>
+
+                <div class="preview-box" id="stego-preview-box">
+                    <div class="preview-img-wrapper">
+                        <img id="stego-preview-img" src="" alt="Stego Image Preview" />
+                    </div>
+                    <div class="preview-meta">
+                        <span class="meta-chip">File: <strong class="meta-filename">-</strong></span>
+                        <span class="meta-chip">Dimensions: <strong class="meta-dimensions">-</strong></span>
+                        <span class="meta-chip">Size: <strong class="meta-size">-</strong></span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column: Password & Extraction Action -->
+            <div class="form-column">
+                <h3 class="column-title"><span>🔑</span> 2. Decryption Passphrase</h3>
+
+                <div class="form-group">
+                    <label for="password">Passphrase:</label>
+                    <div class="password-field-wrapper">
+                        <input type="password" id="password" name="password" class="form-control" placeholder="Enter password used during hide operation..." required autocomplete="current-password" />
+                        <button type="button" class="toggle-password-btn" data-target="password" title="Show password" aria-label="Toggle password visibility">👁️</button>
+                    </div>
+                    <p style="font-size: 0.8rem; color: var(--text-dim); margin-top: 0.3rem;">
+                        The password will be used to derive the 256-bit AES key via PBKDF2.
+                    </p>
+                </div>
+
+                <button type="submit" class="btn btn-primary" style="margin-top: 1.5rem;" data-loading-text="⏳ Extracting &amp; Verifying...">
+                    <span>🔓</span> Extract &amp; Decrypt Message
+                </button>
+            </div>
+        </div>
+    </form>
+    {% endif %}
+</section>
+{% endblock %}

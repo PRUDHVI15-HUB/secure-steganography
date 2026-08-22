@@ -1,0 +1,44 @@
+# ─── Python ─────────────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# ─── Virtual environments ───────────────────────────────────────────────────
+venv/
+.venv/
+env/
+.env/
+
+# ─── Environment / secrets ──────────────────────────────────────────────────
+.env
+*.env
+instance/
+
+# ─── Flask / Application ────────────────────────────────────────────────────
+# Uploaded images and generated stego images are not tracked by git
+uploads/*
+outputs/*
+
+# Keep the directory placeholders
+!uploads/.gitkeep
+!outputs/.gitkeep
+
+# ─── Testing ────────────────────────────────────────────────────────────────
+.pytest_cache/
+htmlcov/
+.coverage
+coverage.xml
+
+# ─── OS / Editor ────────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+*.swo

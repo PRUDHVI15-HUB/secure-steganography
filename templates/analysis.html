@@ -1,0 +1,115 @@
+{% extends "base.html" %}
+
+{% block title %}Security &amp; Image Analysis — Secure Image Steganography{% endblock %}
+
+{% block content %}
+<section class="page-section">
+    <h1 class="section-title">Security &amp; Image Quality Analysis</h1>
+    <p class="section-subtitle">Comprehensive metrics evaluating visual imperceptibility (MSE &amp; PSNR), LSB capacity allocation, and cryptographic parameter verification.</p>
+
+    <!-- ── Session Metrics Dashboard ─────────────────────────────────── -->
+    {% if analysis %}
+    <div class="result-card" style="margin-bottom: 2.5rem;">
+        <h2><span>📊</span> Steganography Performance Metrics</h2>
+        
+        <div class="metrics-grid">
+            <div class="metric-card">
+                <div class="metric-card-title">PSNR Visual Quality</div>
+                <div class="metric-card-value">{{ analysis.psnr_display or 'N/A' }}</div>
+                <div class="metric-card-desc">Peak Signal-to-Noise Ratio (Higher is better)</div>
+            </div>
+
+            <div class="metric-card">
+                <div class="metric-card-title">Mean Squared Error</div>
+                <div class="metric-card-value" style="font-size: 1.4rem;">{{ analysis.mse if analysis.mse is defined else 'N/A' }}</div>
+                <div class="metric-card-desc">Average channel variance (Lower is better)</div>
+            </div>
+
+            <div class="metric-card">
+                <div class="metric-card-title">Payload Capacity</div>
+                <div class="metric-card-value" style="font-size: 1.4rem;">{{ analysis.payload_capacity if analysis.payload_capacity is defined else 'N/A' }} B</div>
+                <div class="metric-card-desc">Total LSB capacity available</div>
+            </div>
+
+            <div class="metric-card">
+                <div class="metric-card-title">Capacity Utilization</div>
+                <div class="metric-card-value">{{ analysis.utilization if analysis.utilization is defined else '0' }}%</div>
+                <div class="metric-card-desc">Embedding ratio occupied</div>
+            </div>
+        </div>
+
+        <div class="crypto-meta-grid">
+            {% if analysis.stego_filename %}
+            <div class="meta-item">
+                <span class="meta-item-label">Stego File Name</span>
+                <span class="meta-item-value mono">{{ analysis.stego_filename }}</span>
+            </div>
+            {% endif %}
+            {% if analysis.width and analysis.height %}
+            <div class="meta-item">
+                <span class="meta-item-label">Image Resolution</span>
+                <span class="meta-item-value">{{ analysis.width }} × {{ analysis.height }} px ({{ analysis.width * analysis.height * 3 }} channels)</span>
+            </div>
+            {% endif %}
+            {% if analysis.payload_bytes is defined %}
+            <div class="meta-item">
+                <span class="meta-item-label">Embedded Payload Size</span>
+                <span class="meta-item-value">{{ analysis.payload_bytes }} bytes</span>
+            </div>
+            {% endif %}
+            {% if analysis.sha256_hex %}
+            <div class="meta-item" style="grid-column: 1 / -1;">
+                <span class="meta-item-label">SHA-256 Payload Hash</span>
+                <span class="meta-item-value mono"><code>{{ analysis.sha256_hex }}</code></span>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- ── Cryptographic Security Parameter Summary ──────────────────── -->
+    <div class="tech-pillars" style="margin: 2.5rem 0;">
+        <div class="pillar-card">
+            <div class="pillar-icon-box">🔐</div>
+            <h3>AES-256-GCM</h3>
+            <p><strong>Authenticated Encryption:</strong> Provides message confidentiality and tamper detection via a 16-byte authentication tag.</p>
+        </div>
+
+        <div class="pillar-card">
+            <div class="pillar-icon-box">🛡️</div>
+            <h3>PBKDF2-HMAC-SHA256</h3>
+            <p><strong>Key Derivation:</strong> 600,000 iterations with 32-byte cryptographic salt defending against dictionary attacks.</p>
+        </div>
+
+        <div class="pillar-card">
+            <div class="pillar-icon-box">#️⃣</div>
+            <h3>SHA-256 Digest</h3>
+            <p><strong>Integrity Verification:</strong> 256-bit hash of $(salt \parallel nonce \parallel ciphertext)$ enabling pre-decryption verification.</p>
+        </div>
+    </div>
+
+    <!-- ── On-Demand Quality Analysis Form ───────────────────────────── -->
+    <div class="result-card">
+        <h2><span>🔍</span> On-Demand Cover vs Stego Comparison</h2>
+        <p style="color: var(--text-muted); margin-bottom: 1.5rem;">
+            Upload an original cover image and an optional stego image to compute instantaneous MSE, PSNR, and capacity metrics.
+        </p>
+
+        <form action="{{ url_for('analysis.analysis_post') }}" method="POST" enctype="multipart/form-data" class="crypto-form">
+            <div class="form-grid" style="padding: 1.5rem; background: var(--bg-surface-elevated);">
+                <div class="form-column">
+                    <label for="original_image"><strong>Original Cover Image (Required):</strong></label>
+                    <input type="file" id="original_image" name="original_image" class="form-control" accept=".png,.bmp" required />
+                </div>
+                <div class="form-column">
+                    <label for="stego_image"><strong>Stego Image (Optional for MSE/PSNR):</strong></label>
+                    <input type="file" id="stego_image" name="stego_image" class="form-control" accept=".png,.bmp" />
+                </div>
+            </div>
+            <button type="submit" class="btn btn-primary" style="margin-top: 1.2rem;" data-loading-text="⏳ Computing Metrics...">
+                <span>📊</span> Run Quality Analysis
+            </button>
+        </form>
+    </div>
+</section>
+{% endblock %}

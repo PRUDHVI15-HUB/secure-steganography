@@ -1,0 +1,14 @@
+# Core web framework
+Flask>=3.0.0
+
+# Image processing
+Pillow>=9.5.0
+
+# Cryptography (AES-256-GCM, PBKDF2)
+cryptography>=42.0.0
+
+# Numerical operations (MSE / PSNR image quality analysis)
+numpy>=1.26.0
+
+# Testing
+pytest>=8.0.0

@@ -1,0 +1,159 @@
+{% extends "base.html" %}
+
+{% block title %}Send / Hide Secret Message — Secure Image Steganography{% endblock %}
+
+{% block content %}
+<section class="page-section">
+    <h1 class="section-title">🔐 Send a Secret Message</h1>
+    <p class="section-subtitle">Select a cover image, enter your secret message, and create a shared password for the intended receiver.</p>
+    
+    <div style="background: rgba(0, 229, 255, 0.08); border-left: 4px solid var(--accent-cyan); padding: 0.85rem 1.2rem; border-radius: 6px; margin-bottom: 2rem; color: var(--text-primary); font-size: 0.95rem;">
+        <strong>⚠️ Security Notice:</strong> The encryption password is never stored inside the image. Share the password separately with the intended receiver via a secure channel.
+    </div>
+
+    {% if success and result %}
+    <!-- ── Success Result Card ──────────────────────────────────────── -->
+    <div class="result-card">
+        <h2><span>✓</span> Stego Image Created Successfully</h2>
+        <div class="status-badges">
+            <span class="badge badge-success">✓ AES-256-GCM Encrypted</span>
+            <span class="badge badge-success">✓ SHA-256 Digest Attached</span>
+            <span class="badge badge-success">✓ LSB Embedded</span>
+            <span class="badge badge-info">Format: Lossless PNG</span>
+        </div>
+
+        <div class="metrics-grid">
+            <div class="metric-card">
+                <div class="metric-card-title">Stego File Name</div>
+                <div class="metric-card-value mono" style="font-size: 1.1rem;">{{ result.stego_filename }}</div>
+                <div class="metric-card-desc">Generated PNG</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-card-title">PSNR Quality</div>
+                <div class="metric-card-value">{{ result.psnr_display }}</div>
+                <div class="metric-card-desc">Peak Signal-to-Noise Ratio</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-card-title">Mean Squared Error</div>
+                <div class="metric-card-value" style="font-size: 1.4rem;">{{ result.mse }}</div>
+                <div class="metric-card-desc">Pixel error (lower is better)</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-card-title">Capacity Utilization</div>
+                <div class="metric-card-value">{{ result.utilization }}%</div>
+                <div class="metric-card-desc">{{ result.payload_bytes }}B / {{ result.payload_capacity }}B</div>
+            </div>
+        </div>
+
+        <div class="crypto-meta-grid">
+            <div class="meta-item">
+                <span class="meta-item-label">Image Dimensions</span>
+                <span class="meta-item-value">{{ result.width }} × {{ result.height }} px</span>
+            </div>
+            <div class="meta-item">
+                <span class="meta-item-label">Payload Size</span>
+                <span class="meta-item-value">{{ result.payload_bytes }} bytes</span>
+            </div>
+            <div class="meta-item" style="grid-column: 1 / -1;">
+                <span class="meta-item-label">SHA-256 Integrity Hash</span>
+                <span class="meta-item-value mono"><code>{{ result.sha256_hex }}</code></span>
+            </div>
+        </div>
+
+        <div style="display: flex; gap: 1rem; flex-wrap: wrap; margin-top: 1.5rem;">
+            <a href="{{ url_for('download', filename=result.stego_filename) }}" class="btn btn-primary" download>
+                <span>⬇</span> Download Stego PNG
+            </a>
+            <a href="{{ url_for('hide.hide_get') }}" class="btn btn-secondary">
+                <span>🔄</span> Hide Another Message
+            </a>
+            <a href="{{ url_for('analysis.analysis') }}" class="btn btn-secondary">
+                <span>📊</span> View Detailed Analysis
+            </a>
+        </div>
+    </div>
+    {% else %}
+    <!-- ── Hide Form (Two-Column Layout) ────────────────────────────── -->
+    <form action="{{ url_for('hide.hide_post') }}" method="POST" enctype="multipart/form-data" class="crypto-form">
+        <div class="form-grid">
+            
+            <!-- Left Column: Cover Image & Preview -->
+            <div class="form-column">
+                <h3 class="column-title"><span>🖼️</span> 1. Select Cover Image</h3>
+                
+                <div class="dropzone" id="cover-dropzone" data-preview="cover-preview-box">
+                    <input type="file" id="image" name="image" accept=".png,.bmp" required />
+                    <div class="dropzone-icon">📁</div>
+                    <div class="dropzone-title">Drop your cover image here</div>
+                    <div class="dropzone-hint">or click to browse (PNG, BMP &mdash; max 16 MB)</div>
+                </div>
+
+                <!-- Live Preview Box -->
+                <div class="preview-box" id="cover-preview-box">
+                    <div class="preview-img-wrapper">
+                        <img id="cover-preview-img" src="" alt="Cover Image Preview" />
+                    </div>
+                    <div class="preview-meta">
+                        <span class="meta-chip">File: <strong class="meta-filename">-</strong></span>
+                        <span class="meta-chip">Dimensions: <strong class="meta-dimensions">-</strong></span>
+                        <span class="meta-chip">Size: <strong class="meta-size">-</strong></span>
+                        <span class="meta-chip">Capacity: <strong class="meta-capacity">-</strong></span>
+                    </div>
+                </div>
+
+                <!-- Client-Side Estimated Capacity Meter -->
+                <div class="capacity-meter-wrapper" id="capacity-meter-wrapper" style="display: none;">
+                    <div class="capacity-header">
+                        <span>Estimated Payload Utilization</span>
+                        <span id="capacity-percentage">0%</span>
+                    </div>
+                    <div class="capacity-bar-container">
+                        <div class="capacity-bar-fill" id="capacity-bar-fill"></div>
+                    </div>
+                    <div class="capacity-footer">
+                        <span id="capacity-used-text">0 bytes used</span>
+                        <span>LSB Capacity Safe</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column: Secret Message & Password -->
+            <div class="form-column">
+                <h3 class="column-title"><span>🔐</span> 2. Secret Message &amp; Encryption</h3>
+
+                <div class="form-group">
+                    <label for="message">Secret Message:</label>
+                    <textarea id="message" name="message" class="form-control" placeholder="Type or paste your confidential text message here..." required></textarea>
+                    <div class="counter-row" aria-live="polite">
+                        <span id="char-count">0 chars</span>
+                        <span>&bull;</span>
+                        <span id="byte-count">0 UTF-8 bytes</span>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="password">Encryption Password:</label>
+                    <div class="password-field-wrapper">
+                        <input type="password" id="password" name="password" class="form-control" placeholder="Enter encryption passphrase..." required autocomplete="new-password" />
+                        <button type="button" class="toggle-password-btn" data-target="password" title="Show password" aria-label="Toggle password visibility">👁️</button>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="confirm_password">Confirm Password:</label>
+                    <div class="password-field-wrapper">
+                        <input type="password" id="confirm_password" name="confirm_password" class="form-control" placeholder="Re-enter passphrase..." required autocomplete="new-password" />
+                        <button type="button" class="toggle-password-btn" data-target="confirm_password" title="Show password" aria-label="Toggle password visibility">👁️</button>
+                    </div>
+                    <div class="password-match-status" id="password-match-status"></div>
+                </div>
+
+                <button type="submit" class="btn btn-primary" style="margin-top: 0.8rem;" data-loading-text="⏳ Encrypting &amp; Embedding...">
+                    <span>🔐</span> Encrypt &amp; Hide Message
+                </button>
+            </div>
+        </div>
+    </form>
+    {% endif %}
+</section>
+{% endblock %}

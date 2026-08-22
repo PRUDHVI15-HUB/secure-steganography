@@ -1,0 +1,137 @@
+{% extends "base.html" %}
+
+{% block title %}About &amp; Architecture Documentation — Secure Image Steganography{% endblock %}
+
+{% block content %}
+<section class="page-section">
+    <h1 class="section-title">Educational Documentation &amp; Architecture</h1>
+    <p class="section-subtitle">A comprehensive academic study of combined cryptographic encryption and spatial-domain image steganography for Cryptography &amp; Network Security (CNS).</p>
+
+    <div class="edu-section">
+        <!-- ── 1. Cryptography vs Steganography ──────────────────────────── -->
+        <div class="edu-card">
+            <h2><span>⚖️</span> 1. Cryptography vs. Steganography</h2>
+            <p>
+                A fundamental concept in information security is understanding the complementary relationship between <strong>cryptography</strong> and <strong>steganography</strong>:
+            </p>
+
+            <div class="comparison-table-wrapper">
+                <table class="comparison-table">
+                    <thead>
+                        <tr>
+                            <th>Security Dimension</th>
+                            <th>Cryptography (Encryption)</th>
+                            <th>Steganography (Data Hiding)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Primary Objective</strong></td>
+                            <td>Hides the <em>meaning</em> (content) of a message.</td>
+                            <td>Hides the <em>existence</em> of the communication.</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Visibility to Eavesdropper</strong></td>
+                            <td>Ciphertext is overtly scrambled and visibly suspicious.</td>
+                            <td>Carrier image appears completely benign and natural.</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Failure Scenario</strong></td>
+                            <td>Attacker knows data exists and may attempt cryptanalysis.</td>
+                            <td>If detected, the raw hidden data is exposed (unless pre-encrypted).</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Defense-in-Depth Solution</strong></td>
+                            <td colspan="2">
+                                <strong>Our Combined Pipeline:</strong> The message is first encrypted with <strong>AES-256-GCM</strong>, then embedded into the image using <strong>LSB steganography</strong>. Even if an adversary intercepts or detects the stego image, they cannot decrypt the payload without the passphrase.
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- ── 2. Cryptographic Security Engine ──────────────────────────── -->
+        <div class="edu-card">
+            <h2><span>🔐</span> 2. Cryptographic Engine (AES-256-GCM + PBKDF2)</h2>
+            <p>
+                Our cryptographic layer adheres to modern high-assurance standards:
+            </p>
+            <ul>
+                <li><strong>PBKDF2-HMAC-SHA256:</strong> Converts the user's password into a 256-bit AES key using <strong>600,000 iterations</strong> and a unique, cryptographically random 32-byte salt generated via <code>os.urandom(32)</code>. This design actively resists GPU-accelerated dictionary attacks.</li>
+                <li><strong>AES-256-GCM (Galois/Counter Mode):</strong> Authenticated symmetric block cipher operating with a fresh 12-byte (96-bit) nonce per hide operation. It produces ciphertext and a 16-byte (128-bit) authentication tag to guarantee both confidentiality and authenticity.</li>
+            </ul>
+        </div>
+
+        <!-- ── 3. SHA-256 Integrity Verification ─────────────────────────── -->
+        <div class="edu-card">
+            <h2><span>#️⃣</span> 3. SHA-256 Integrity Verification</h2>
+            <p>
+                To provide an educational demonstration of hashing as a separate CNS concept:
+            </p>
+            <p>
+                $$\text{Digest} = \text{SHA-256}(\text{salt} \parallel \text{nonce} \parallel \text{ciphertext})$$
+            </p>
+            <p>
+                The 256-bit digest is stored in the versioned payload. During extraction, the receiver recalculates this hash before decryption.
+                A mismatch indicates pixel alteration, carrier corruption, or payload tampering. Verification is performed using <code>hmac.compare_digest()</code> to mitigate timing side-channel leaks.
+            </p>
+        </div>
+
+        <!-- ── 4. Spatial LSB Steganography ──────────────────────────────── -->
+        <div class="edu-card">
+            <h2><span>🖼️</span> 4. Spatial-Domain LSB Steganography</h2>
+            <p>
+                In 24-bit RGB images, each pixel consists of three 8-bit color channels (Red, Green, Blue) ranging from 0 to 255.
+                The least significant bit (LSB, bit position 0) holds the smallest mathematical value ($2^0 = 1$). Modifying this bit changes the channel luminance by at most 1 unit &mdash; imperceptible to the human eye.
+            </p>
+            <p>
+                <strong>Bit Modification Formula:</strong>
+            </p>
+            <pre class="mono" style="background: var(--bg-surface-elevated); padding: 1rem; border-radius: var(--radius-sm); margin-bottom: 1rem;">
+new_channel_value = (original_channel_value &amp; 0xFE) | payload_bit
+            </pre>
+            <p>
+                <strong>Capacity Formula:</strong>
+                $$\text{Capacity (bytes)} = \left\lfloor \frac{\text{Width} \times \text{Height} \times 3}{8} \right\rfloor - 4 \text{ (header bytes)}$$
+            </p>
+        </div>
+
+        <!-- ── 5. Image Quality Metrics (MSE & PSNR) ─────────────────────── -->
+        <div class="edu-card">
+            <h2><span>📈</span> 5. Image Fidelity Metrics (MSE &amp; PSNR)</h2>
+            <p>
+                To quantify the imperceptibility of the steganographic alteration, we calculate two standard metrics:
+            </p>
+            <ul>
+                <li>
+                    <strong>Mean Squared Error (MSE):</strong> Average squared difference between original and stego channel values.
+                    $$\text{MSE} = \frac{1}{W \times H \times 3} \sum_{x,y,c} \left(I_{\text{orig}}(x,y,c) - I_{\text{stego}}(x,y,c)\right)^2$$
+                    <em>Lower values denote higher fidelity (0.0 represents identical images).</em>
+                </li>
+                <li>
+                    <strong>Peak Signal-to-Noise Ratio (PSNR):</strong> Logarithmic ratio between maximum possible signal power and noise distortion.
+                    $$\text{PSNR} = 10 \cdot \log_{10}\left(\frac{255^2}{\text{MSE}}\right) \text{ dB}$$
+                    <em>Typical LSB PSNR exceeds 50 dB ($\infty$ dB for identical images). Values $> 40\text{ dB}$ are visually imperceptible.</em>
+                </li>
+            </ul>
+        </div>
+
+        <!-- ── 6. Format Selection & Real-World Limitations ──────────────── -->
+        <div class="edu-card">
+            <h2><span>⚠️</span> 6. Lossless PNG Requirement &amp; LSB Limitations</h2>
+            <p>
+                <strong>Why PNG / BMP and not JPEG?</strong><br />
+                JPEG uses lossy Discrete Cosine Transform (DCT) compression. When saving to JPEG, high-frequency spatial details (including modified LSBs) are discarded, destroying the embedded payload. PNG uses lossless DEFLATE compression, preserving pixel bit values exactly.
+            </p>
+            <p>
+                <strong>Real-World Steganography Limitations:</strong>
+            </p>
+            <ul>
+                <li><strong>Non-Robust:</strong> LSB embedding does not survive image resizing, cropping, color adjustment, or lossy recompression.</li>
+                <li><strong>Steganalysis Susceptibility:</strong> Statistical techniques (such as Chi-square ($\chi^2$) analysis and Sample Pairs analysis) can detect LSB flipping in unencrypted or low-entropy scenarios. Encrypting the payload before embedding provides pseudo-random high entropy, increasing detection difficulty.</li>
+            </ul>
+        </div>
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,149 @@
+{% extends "base.html" %}
+
+{% block title %}Secure Image Steganography — Dashboard{% endblock %}
+
+{% block content %}
+<!-- ── Hero Landing Section ─────────────────────────────────────────── -->
+<section class="hero">
+    <div class="hero-badge">
+        <span>🛡️</span> DEFENSIVE CYBERSECURITY ARCHITECTURE
+    </div>
+    <h1>
+        Secure Image Steganography<br />
+        <span class="hero-gradient-text">Encrypted &amp; Imperceptible</span>
+    </h1>
+    <p class="hero-subtitle">
+        Hide confidential messages inside digital images using military-grade <strong>AES-256-GCM</strong> authenticated encryption,
+        deterministic <strong>SHA-256</strong> integrity verification, and spatial <strong>LSB image steganography</strong>.
+    </p>
+    <div class="hero-actions">
+        <a href="{{ url_for('hide.hide_get') }}" class="btn btn-primary">
+            <span>🔐</span> Send / Hide Secret Message
+        </a>
+        <a href="{{ url_for('extract.extract_get') }}" class="btn btn-secondary">
+            <span>🔓</span> Receive / Extract Secret Message
+        </a>
+        <a href="{{ url_for('analysis.analysis') }}" class="btn btn-secondary">
+            <span>📊</span> Security Analysis
+        </a>
+    </div>
+</section>
+
+<!-- ── Two-Party Covert Communication Model ──────────────────────────── -->
+<section style="margin: 2rem 0;">
+    <h2 class="section-title">How Covert Communication Works</h2>
+    <p class="section-subtitle">A layered dual-defense workflow between sender and receiver</p>
+
+    <div class="tech-pillars" style="grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));">
+        <div class="pillar-card" style="border-left: 4px solid var(--accent-cyan);">
+            <div class="pillar-icon-box">📤</div>
+            <h3>SENDER: Encrypt &amp; Hide</h3>
+            <p style="margin-bottom: 0.8rem; color: var(--text-primary); font-weight: 500;">
+                Encrypt a secret message and hide it inside an image. Send the resulting image to the intended receiver.
+            </p>
+            <p class="mono" style="font-size: 0.85rem; color: var(--accent-cyan); background: var(--bg-surface-elevated); padding: 0.75rem; border-radius: 6px;">
+                Secret Message + Password &rarr; AES-256-GCM &rarr; SHA-256 Digest &rarr; LSB Embed &rarr; Stego PNG
+            </p>
+            <div style="margin-top: 1rem;">
+                <a href="{{ url_for('hide.hide_get') }}" class="btn btn-primary" style="font-size: 0.85rem; padding: 0.5rem 1rem;">
+                    <span>🔐</span> Send / Hide Secret Message
+                </a>
+            </div>
+        </div>
+
+        <div class="pillar-card" style="border-left: 4px solid var(--accent-emerald);">
+            <div class="pillar-icon-box">📥</div>
+            <h3>RECEIVER: Extract &amp; Decrypt</h3>
+            <p style="margin-bottom: 0.8rem; color: var(--text-primary); font-weight: 500;">
+                Upload a stego image received from the sender and enter the shared password to recover the hidden message.
+            </p>
+            <p class="mono" style="font-size: 0.85rem; color: var(--accent-emerald); background: var(--bg-surface-elevated); padding: 0.75rem; border-radius: 6px;">
+                Stego PNG + Shared Password &rarr; LSB Extract &rarr; SHA-256 Verify &rarr; AES-GCM Decrypt &rarr; Secret Message
+            </p>
+            <div style="margin-top: 1rem;">
+                <a href="{{ url_for('extract.extract_get') }}" class="btn btn-secondary" style="font-size: 0.85rem; padding: 0.5rem 1rem;">
+                    <span>🔓</span> Receive / Extract Secret Message
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ── Core Technology Pillars ──────────────────────────────────────── -->
+<section class="tech-pillars">
+    <div class="pillar-card">
+        <div class="pillar-icon-box">🔐</div>
+        <h3>AES-256-GCM Encryption</h3>
+        <p>
+            Transforms confidential plaintext into cryptographically strong ciphertext with a 128-bit authentication tag.
+            Keys are derived using PBKDF2-HMAC-SHA256 with 600,000 iterations and a fresh 32-byte salt per operation.
+        </p>
+    </div>
+    <div class="pillar-card">
+        <div class="pillar-icon-box">#️⃣</div>
+        <h3>SHA-256 Integrity Verification</h3>
+        <p>
+            Generates a fixed 256-bit cryptographic digest over all payload components $(salt \parallel nonce \parallel ciphertext)$.
+            Guarantees immediate detection if the stego image is modified or tampered with at the pixel level.
+        </p>
+    </div>
+    <div class="pillar-card">
+        <div class="pillar-icon-box">🖼️</div>
+        <h3>Spatial LSB Steganography</h3>
+        <p>
+            Conceals the versioned binary payload directly inside the least significant bits of RGB image channels.
+            Produces imperceptible visual alterations with high Peak Signal-to-Noise Ratio (PSNR) values in lossless PNG.
+        </p>
+    </div>
+</section>
+
+<!-- ── Visual End-to-End Pipeline ────────────────────────────────────── -->
+<section class="pipeline-section">
+    <h2 class="section-title">Cryptographic &amp; Embedding Pipeline</h2>
+    <p class="section-subtitle">How your secret data travels through our defensive security architecture</p>
+    
+    <div class="pipeline-grid">
+        <div class="pipeline-step">
+            <span class="step-number">1</span>
+            <span class="step-icon">📝</span>
+            <h4 class="step-title">Secret Message</h4>
+            <p class="step-desc">UTF-8 Plaintext input</p>
+        </div>
+
+        <div class="pipeline-step">
+            <span class="step-number">2</span>
+            <span class="step-icon">🔑</span>
+            <h4 class="step-title">PBKDF2 + AES-GCM</h4>
+            <p class="step-desc">256-bit Key &amp; 12B Nonce</p>
+        </div>
+
+        <div class="pipeline-step">
+            <span class="step-number">3</span>
+            <span class="step-icon">#️⃣</span>
+            <h4 class="step-title">SHA-256 Digest</h4>
+            <p class="step-desc">Calculated over components</p>
+        </div>
+
+        <div class="pipeline-step">
+            <span class="step-number">4</span>
+            <span class="step-icon">📦</span>
+            <h4 class="step-title">Versioned JSON</h4>
+            <p class="step-desc">Base64 serialized container</p>
+        </div>
+
+        <div class="pipeline-step">
+            <span class="step-number">5</span>
+            <span class="step-icon">🖼️</span>
+            <h4 class="step-title">LSB Embedding</h4>
+            <p class="step-desc">RGB Bit injection (1 bit/channel)</p>
+        </div>
+
+        <div class="pipeline-step">
+            <span class="step-number">6</span>
+            <span class="step-icon">💾</span>
+            <h4 class="step-title">Stego PNG</h4>
+            <p class="step-desc">Visually identical output image</p>
+        </div>
+    </div>
+</section>
+{% endblock %}

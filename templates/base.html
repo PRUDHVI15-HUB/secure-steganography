@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{% block title %}Secure Image Steganography — CNS Lab{% endblock %}</title>
+    <meta name="description" content="{% block meta_description %}AES-256-GCM encrypted LSB image steganography with SHA-256 integrity verification.{% endblock %}" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
+</head>
+<body>
+
+    <!-- ── Main Navigation Header ───────────────────────────────────────── -->
+    <nav class="navbar" aria-label="Main Navigation">
+        <a class="nav-brand" href="{{ url_for('index') }}">
+            <span class="brand-icon">🔐</span>
+            <span class="brand-name">SecureStego</span>
+        </a>
+        <ul class="nav-links">
+            <li><a href="{{ url_for('index') }}" class="nav-link">Home</a></li>
+            <li><a href="{{ url_for('hide.hide_get') }}" class="nav-link">Send / Hide Message</a></li>
+            <li><a href="{{ url_for('extract.extract_get') }}" class="nav-link">Receive / Extract Message</a></li>
+            <li><a href="{{ url_for('analysis.analysis') }}" class="nav-link">Security Analysis</a></li>
+            <li><a href="{{ url_for('about') }}" class="nav-link">About &amp; Docs</a></li>
+        </ul>
+    </nav>
+
+    <!-- ── Flash Notification Messages ──────────────────────────────────── -->
+    <div class="flash-container">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}" role="alert">
+                        <div class="alert-content">
+                            <span class="alert-icon">
+                                {% if category == 'success' %}✓{% elif category == 'error' %}✕{% elif category == 'warning' %}⚠{% else %}ℹ{% endif %}
+                            </span>
+                            <span class="alert-message">{{ message }}</span>
+                        </div>
+                        <button type="button" class="alert-close" aria-label="Dismiss alert">&times;</button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+    </div>
+
+    <!-- ── Page Content Container ───────────────────────────────────────── -->
+    <main class="main-content">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- ── Application Footer ───────────────────────────────────────────── -->
+    <footer class="footer">
+        <p><strong>Secure Image Steganography</strong> &mdash; College Laboratory Project for Cryptography &amp; Network Security</p>
+        <div class="footer-tags">
+            <span class="footer-tag">AES-256-GCM</span>
+            <span class="footer-tag">PBKDF2-HMAC-SHA256 (600,000 iter)</span>
+            <span class="footer-tag">SHA-256 Integrity Digest</span>
+            <span class="footer-tag">Spatial LSB Steganography</span>
+            <span class="footer-tag">Lossless PNG</span>
+        </div>
+    </footer>
+
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    {% block extra_scripts %}{% endblock %}
+</body>
+</html>
