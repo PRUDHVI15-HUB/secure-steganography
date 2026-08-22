@@ -1,5 +1,6 @@
-# Core web framework
+# Core web framework & production WSGI server
 Flask>=3.0.0
+gunicorn>=21.2.0
 
 # Image processing
 Pillow>=9.5.0
